@@ -1,0 +1,89 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Doctor {
+  id           Int          @id @default(autoincrement())
+  email        String       @unique
+  passwordHash String
+  firstName    String
+  lastName     String
+  phone        String?
+  procedures   Procedure[]
+  patients     Patient[]
+  assignments  Assignment[]
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
+}
+
+model Patient {
+  id           Int          @id @default(autoincrement())
+  doctor       Doctor?      @relation(fields: [doctorId], references: [id])
+  doctorId     Int?
+  email        String       @unique
+  passwordHash String
+  firstName    String
+  lastName     String
+  dateOfBirth  DateTime?
+  phone        String?
+  address      String?
+  city         String?
+  state        String?
+  zipCode      String?
+  assignments  Assignment[]
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
+}
+
+model Procedure {
+  id           Int          @id @default(autoincrement())
+  doctor       Doctor       @relation(fields: [doctorId], references: [id])
+  doctorId     Int
+  title        String
+  description  String
+  pdfUrl       String?
+  videoUrl     String?
+  assignments  Assignment[]
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
+}
+
+model Assignment {
+  id           Int             @id @default(autoincrement())
+  patient      Patient         @relation(fields: [patientId], references: [id])
+  patientId    Int
+  procedure    Procedure       @relation(fields: [procedureId], references: [id])
+  procedureId  Int
+  status       AssignmentStatus @default(SENT)
+  startedAt    DateTime?
+  completedAt  DateTime?
+  chatMessages ChatMessage[]
+  createdAt    DateTime        @default(now())
+  updatedAt    DateTime        @updatedAt
+}
+
+model ChatMessage {
+  id           Int        @id @default(autoincrement())
+  assignment   Assignment @relation(fields: [assignmentId], references: [id])
+  assignmentId Int
+  senderType   SenderType
+  content      String
+  createdAt    DateTime   @default(now())
+}
+
+enum AssignmentStatus {
+  SENT
+  VIEWED
+  IN_PROGRESS
+  COMPLETED
+}
+
+enum SenderType {
+  DOCTOR
+  PATIENT
+}

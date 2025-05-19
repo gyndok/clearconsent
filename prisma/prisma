@@ -1,0 +1,74 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Doctor {
+  id           String      @id @default(uuid())
+  email        String      @unique
+  passwordHash String
+  firstName    String
+  lastName     String
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
+  procedures   Procedure[]
+  assignments  Assignment[]
+}
+
+model Patient {
+  id           String      @id @default(uuid())
+  email        String      @unique
+  passwordHash String
+  firstName    String
+  lastName     String
+  phone        String?
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
+  assignments  Assignment[]
+  messages     ChatMessage[] @relation("PatientMessages")
+}
+
+model Procedure {
+  id                String      @id @default(uuid())
+  title             String
+  description       String
+  category          String
+  estimatedDuration Int
+  pdfUrl            String?
+  videoUrl          String?
+  doctorId          String
+  doctor            Doctor      @relation(fields: [doctorId], references: [id])
+  createdAt         DateTime    @default(now())
+  updatedAt         DateTime    @updatedAt
+  assignments       Assignment[]
+}
+
+model Assignment {
+  id           String      @id @default(uuid())
+  patientId    String
+  procedureId  String
+  doctorId     String
+  status       String      // e.g., "Sent", "Viewed", "In Progress", "Completed"
+  assignedAt   DateTime    @default(now())
+  completedAt  DateTime?
+  patient      Patient     @relation(fields: [patientId], references: [id])
+  procedure    Procedure   @relation(fields: [procedureId], references: [id])
+  doctor       Doctor      @relation(fields: [doctorId], references: [id])
+  messages     ChatMessage[]
+}
+
+model ChatMessage {
+  id            String      @id @default(uuid())
+  assignmentId  String
+  senderType    String      // "doctor" or "patient"
+  senderId      String      // Doctor.id or Patient.id, depending on senderType
+  content       String
+  sentAt        DateTime    @default(now())
+  read          Boolean     @default(false)
+  assignment    Assignment  @relation(fields: [assignmentId], references: [id])
+  patient       Patient?    @relation("PatientMessages", fields: [senderId], references: [id])
+}

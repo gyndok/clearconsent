@@ -12,6 +12,7 @@ import {
   Bell,
   HelpCircle,
   BarChart,
+  Baby,
   LogOut,
 } from "lucide-react"
 import {
@@ -59,6 +60,12 @@ const mainNavItems = [
     href: "/analytics",
     icon: BarChart,
     description: "View insights and reports",
+  },
+  {
+    title: "Pregnancy wheel",
+    href: "/pregnancy-wheel",
+    icon: Baby,
+    description: "Calculate due dates and milestones",
   },
 ]
 
